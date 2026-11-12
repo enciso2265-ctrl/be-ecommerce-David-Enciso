@@ -1,0 +1,37 @@
+databases:
+  - name: ecommerce-t3-db
+    databaseName: ecommerce_t3_db
+    user: ecommerce_t3_db_user
+    plan: free
+    region: oregon
+    postgresMajorVersion: "17"
+services:
+  - type: web
+    name: be-ecommerce-davidenciso
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: postgres
+      - key: DB_HOST
+        fromDatabase: {name: ecommerce-t3-db, property: host}
+      - key: DB_PORT
+        fromDatabase: {name: ecommerce-t3-db, property: port}
+      - key: DB_NAME
+        fromDatabase: {name: ecommerce-t3-db, property: database}
+      - key: DB_USER
+        fromDatabase: {name: ecommerce-t3-db, property: user}
+      - key: DB_PASSWORD
+        fromDatabase: {name: ecommerce-t3-db, property: password}
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: DavidEnciso
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "*"
