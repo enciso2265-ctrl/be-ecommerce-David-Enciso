@@ -1,8 +1,9 @@
 FROM alpine:3.20 AS unpack
-RUN apk add --no-cache unzip
 WORKDIR /tmp
-COPY backend-t3-runtime.zip /tmp/source.zip
-RUN mkdir -p /src && unzip -q /tmp/source.zip -d /src
+COPY backend-t3-part*.b64 /tmp/
+RUN cat /tmp/backend-t3-part*.b64 | base64 -d > /tmp/source.zip \
+    && mkdir -p /src \
+    && unzip -q /tmp/source.zip -d /src
 
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
