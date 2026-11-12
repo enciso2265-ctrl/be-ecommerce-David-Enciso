@@ -1,0 +1,173 @@
+{
+  "info": {
+    "_postman_id": "7f6f0a2f-97a9-4f9e-9a4f-davidenciso-t3",
+    "name": "UPN T3 - Backend E-commerce en Render",
+    "description": "Colección para la evidencia T3. Configura admin_password con el valor ADMIN_PASSWORD visible en el Environment de Render. El login guarda el JWT automáticamente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://be-ecommerce-davidenciso.onrender.com"
+    },
+    {
+      "key": "admin_username",
+      "value": "DavidEnciso"
+    },
+    {
+      "key": "admin_password",
+      "value": "PEGAR_ADMIN_PASSWORD_DE_RENDER"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "producto_id",
+      "value": ""
+    },
+    {
+      "key": "demo_barcode",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Login JWT (público)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/api/auth/login"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login responde 200', function () { pm.response.to.have.status(200); });",
+              "const data = pm.response.json();",
+              "pm.expect(data.token).to.be.a('string').and.not.empty;",
+              "pm.collectionVariables.set('token', data.token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Listar productos (JWT)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/productos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Listado responde 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Crear producto de evidencia (JWT)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('demo_barcode', 'T3-DEMO-' + Date.now());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Producto creado', function () { pm.response.to.have.status(201); });",
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('producto_id', data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Laptop T3 Demo\",\n  \"categoria\": \"Tecnologia\",\n  \"precioCompra\": 1500.00,\n  \"precioVenta\": 1899.90,\n  \"stock\": 10,\n  \"marca\": \"Lenovo\",\n  \"codigoBarras\": \"{{demo_barcode}}\",\n  \"fechaIngreso\": \"2026-11-12\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/api/productos"
+      }
+    },
+    {
+      "name": "04 - Consultar producto creado (JWT)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/productos/{{producto_id}}"
+      }
+    }
+  ]
+}
